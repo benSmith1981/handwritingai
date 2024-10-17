@@ -5,11 +5,19 @@ from PIL import Image, ImageOps
 import numpy as np
 import os
 
+# Register the custom CTC loss function
+@register_keras_serializable(package="Custom", name="ctc_loss")
+def ctc_loss(args):
+    y_true, y_pred, input_length, label_length = args
+    return tf.keras.backend.ctc_batch_cost(y_true, y_pred, input_length, label_length)
+
+# Load the model with custom_objects
+model = load_model('handwriting_model.h5', custom_objects={'ctc_loss': ctc_loss}, compile=False)
 # Initialize Flask app
 app = Flask(__name__)
 
 # Load the pre-trained handwriting recognition model
-model = load_model('handwriting_model.h5', compile=False)
+# model = load_model('handwriting_model.h5', compile=False)
 
 # Function to preprocess the uploaded image to match the input shape of the model
 def preprocess_image(image):
